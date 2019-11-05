@@ -1,20 +1,5 @@
 /* #include "random_number.h"
 
-***/
-
-/*
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <cstdio>
-
-void writer (const char * message, int count, FILE * stream){
-    for (;count > 0; --count){
-        fprintf (stream, "%s\n", message);
-        fflush (stream);
-        sleep(1);
-    }
-}
 
 void reader (FILE * stream){
     char buffer[1024];
@@ -248,6 +233,9 @@ int getSub(int line1[4], int line2[4]){
     bool l12 = line1[2] >= min(line2[0],line1[2]) && line1[2] <= max(line2[0],line2[2]);
     bool l11 = line1[1] >= min(line2[1],line1[3]) && line1[1] <= max(line2[1],line2[3]);
     bool l13 = line1[3] >= min(line2[1],line1[3]) && line1[3] <= max(line2[1],line2[3]);
+    if (line1[0] - line1[2] == 0 || line2[0] - line2[2] == 0){
+        return 1;
+    }
     float k1 = ((line1[1] - line1[3]) / (line1[0] - line1[2]));
     float b1 = (line1[1] - k1 * line1[0]);
     float k2 = ((line2[1] - line2[3]) / (line2[0] - line2[2]));
@@ -328,6 +316,7 @@ int detectOverlap(){
     }
 
     // detect overlap segment among all of the street.
+    bool intersection = false;
     for (int m = 0; m < streetNumber; ++m) {
         segNumber = segNumbers[m];
         int nodeNumber = (2 * (segNumber + 1));
@@ -339,8 +328,14 @@ int detectOverlap(){
             if (i < nodeNumber - 3){
                 for (int j = (m + 1); j < streetNumber; ++j) {
                     for (int k = 0; k < (2 * (segNumbers[j] + 1)); ++k) {
-                        if (tempCoord[0] == coords[j][k] && tempCoord[1] == coords[j][k+1]
-                        && tempCoord[2] == coords[j][k+2] && tempCoord[3] == coords[j][k+3]){
+                        if (k + 3 >= (nodeNumber)) break;
+                        tempCoord2[0] = coords[j][k];
+                        tempCoord2[1] = coords[j][k+1];
+                        tempCoord2[2] = coords[j][k+2];
+                        tempCoord2[3] = coords[j][k+3];
+                        if (getCrossPoint(tempCoord,tempCoord2) == 0) intersection = true;
+                        if (tempCoord[0] == tempCoord2[0] && tempCoord[1] == tempCoord2[1]
+                        && tempCoord[2] == tempCoord2[2] && tempCoord[3] == tempCoord2[3]){
                             cerr << "the lines are " << m << " and " << j << endl;
                             cout << endl;
                             return -1;
@@ -368,6 +363,7 @@ int detectOverlap(){
                     j = j + 1;
                     if (getSub(tempCoord, tempCoord2) == 0){
                         cerr << "There is a complete overlap(this street is a sub street)" << endl;
+                        cerr << "the substreet is " << m << endl;
                         cerr << "the street is " << i << endl;
                         cerr << tempCoord2[0] << tempCoord2[1] << tempCoord2[2] << tempCoord2[3] << endl;
                         return -1;
@@ -377,7 +373,11 @@ int detectOverlap(){
             }
         }
     }
-    return 0;
+    if (intersection == true) return 0;
+    else{
+        cerr << "There is no intersection among these street." << endl;
+        return -1;
+    }
 }
 
 
@@ -401,8 +401,8 @@ int main(){
         // can be deleted afterall but remember to add the detectOverlop.
         if (detectOverlap() == -1) {
             countNumber = 1 + countNumber;
-            if (countNumber == 25) {
-                cerr << "Error: Failed to generate valid input for 25 simultaneous attempts." << endl;
+            if (countNumber == 100) {
+                cerr << "Error: Failed to generate valid input for 100 simultaneous attempts." << endl;
                 exit(0);
             }
         }
