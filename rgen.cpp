@@ -51,13 +51,14 @@ int main(){
 #include <fstream>
 #include <stdlib.h>
 #include <unistd.h>
+#include <algorithm>
 using namespace std;
 
 // s is the street number
 // n is the number of line-segments in each street
 // l is the waiting time before generating next random input
 // c is the coordinates values
-int s, n, l, c=2;
+int s, n, l, c;
 int smin = 2;
 int nmin = 1;
 int lmin = 5;
@@ -183,6 +184,7 @@ int getWaitTime(){
     return waitTime;
 }
 
+// define a function to initialize coordinate of each street.
 int getCoords(int nNumber){
     int segNumber;
     cout << "cdefault is: " << cDefault << endl;
@@ -197,10 +199,86 @@ int getCoords(int nNumber){
     return 0;
 }
 
-int detectOverlop(){
+// these two functions are used to detect if crosspoints exist. -1 means there is no intersection between two segments.
+float crossPoint[2] = {0,0};
+int CPinSegment (int line1[4], int line2[4]){
+    // detect line is vertical
+    if (line1[0] == line1[2]){
+        if (crossPoint[1] >= min(line1[1],line1[3]) && crossPoint[1] <= max(line1[1],line1[3])){
+            if (crossPoint[0] >= min(line2[0], line2[2]) && crossPoint[0] <= max(line2[0], line2[2])) return 0;
+        }
+    }
+    // detect line is horizontal
+    if (line1[1] == line1[3]){
+        if (crossPoint[0] >= min(line1[0], line1[2]) && crossPoint[0] <= max(line1[0], line1[2])){
+            if (crossPoint[1] >= min(line2[1], line2[3]) && crossPoint[1] <= max(line2[1], line2[3])) return 0;
+        }
+    }
+
+    if (crossPoint[0] >= min(line1[0], line1[2]) && crossPoint[0] <= max(line1[0], line1[2])){
+        if (crossPoint[1] >= min(line2[1], line2[3]) && crossPoint[1] <= max(line2[1], line2[3]) &&
+        crossPoint[0] >= min(line2[0], line2[2]) && crossPoint[0] <= max(line2[0], line2[2])) return 0;
+    }
+    else return -1;
+}
+int getCrossPoint(int line1[4], int line2[4]){
+    float a1, a2, b1, b2, c1, c2;
+    float d;
+    a1 = line1[1] - line1[3];
+    b1 = line1[2] - line1[0];
+    c1 = line1[0] * line1[3] - line1[2] * line1[1];
+    a2 = line2[1] - line2[3];
+    b2 = line2[2] - line2[0];
+    c2 = line2[0] * line2[3] - line2[2] * line2[1];
+    d = a1 * b2 - a2 * b1;
+    if (d == 0) return -1; //two lines are horizontal
+    else {
+        crossPoint[0] = ((b1 * c2 - b2 * c1) / d);
+        crossPoint[1] = ((c1 * a2 - c2 * a1) / d);
+    }
+    if (CPinSegment(line1, line2) == 0) return 0;
+    else {
+        return -1;
+    }
+}
+
+// define a function to detect street is a sub street. 0 means this is a sub street.
+int getSub(int line1[4], int line2[4]){
+    bool l10 = line1[0] >= min(line2[0],line1[2]) && line1[0] <= max(line2[0],line2[2]);
+    bool l12 = line1[2] >= min(line2[0],line1[2]) && line1[2] <= max(line2[0],line2[2]);
+    bool l11 = line1[1] >= min(line2[1],line1[3]) && line1[1] <= max(line2[1],line2[3]);
+    bool l13 = line1[3] >= min(line2[1],line1[3]) && line1[3] <= max(line2[1],line2[3]);
+    float k1 = ((line1[1] - line1[3]) / (line1[0] - line1[2]));
+    float b1 = (line1[1] - k1 * line1[0]);
+    float k2 = ((line2[1] - line2[3]) / (line2[0] - line2[2]));
+    float b2 = (line2[1] - k2 * line2[0]);
+    if (l10 == true && l11 == true && l12 == true && l13 == true && k1 == k2 && b1 == b2) return 0;
+    else return -1;
+}
+
+int crossPointInSegment(int line[4]){
+    if (line[0] - line[2] != 0){
+        float k = ((line[1] - line[3]) / (line[0] - line[2]));
+        float b = (line[1] - k * line[0]);
+        if (((crossPoint[1] - (k * crossPoint[0] + b)) < 0.0001 || (crossPoint[1] - (k * crossPoint[0] + b)) > 0.0001) &&
+        crossPoint[0] >= min(line[0], line[2]) && crossPoint[0] <= max(line[0],line[2]) &&
+        crossPoint[1] >= min(line[1], line[3]) && crossPoint[1] <= max(line[1],line[3]))
+            return 0;
+        else return -1;
+    } else{
+        if (crossPoint[0] == line[0] && crossPoint[1] >= min(line[1], line[3]) && crossPoint[1] <= max(line[1],line[3]))
+            return 0;
+        else return -1;
+    }
+}
+
+// define a function to detect repeat and overlap problems.
+int detectOverlap(){
     int tempCoord[4];
+    int tempCoord2[4];
     int segNumber;
-    // detect same node exisit in each street.
+
+    // detect same node exist in each street.
     for (int i = 0; i < streetNumber; ++i) {
         segNumber = segNumbers[i];
         for (int j = 0; j < (2 * (segNumber + 1)); ++j) {
@@ -214,6 +292,35 @@ int detectOverlop(){
                         return -1;
                     }
                     k = k + 1;
+                }
+            }
+            j = j + 1;
+        }
+    }
+
+    // detect crosspoint exist in same street.
+    for (int i = 0; i < streetNumber; ++i) {
+        segNumber = segNumbers[i];
+        for (int j = 0; j < (2 * (segNumber + 1)); ++j) {
+            tempCoord[0] = coords[i][j];
+            tempCoord[1] = coords[i][j+1];
+            tempCoord[2] = coords[i][j+2];
+            tempCoord[3] = coords[i][j+3];
+            if (j < (2 * (segNumber + 1)) - 3){
+                for (int k = j + 4; k < (2 * (segNumber + 1)) ; ++k) {
+                    if (k + 3 >= (2 * (segNumber + 1))) break;
+                    tempCoord2[0] = coords[i][k];
+                    tempCoord2[1] = coords[i][k+1];
+                    tempCoord2[2] = coords[i][k+2];
+                    tempCoord2[3] = coords[i][k+3];
+                    if (getCrossPoint(tempCoord, tempCoord2) == 0) {
+                        cerr << "There is intersection between segment in a street." << i << endl;
+                        cerr << "the crosspoint is: " << crossPoint[0] << " " << crossPoint[1] << endl;
+                        cerr << "seg1 " << tempCoord[0] << "," << tempCoord[1] << "  " << tempCoord[2] << "," << tempCoord[3] << endl;
+                        cerr << "seg2 " << tempCoord2[0] << "," << tempCoord2[1] << "  " << tempCoord2[2] << "," << tempCoord2[3] << endl;
+                        return -1;
+                    }
+                    k = k + 3;
                 }
             }
             j = j + 1;
@@ -244,9 +351,35 @@ int detectOverlop(){
             }
             i = i + 1;
         }
+        // detect one street is a sub street.
+        if (segNumber == 1){
+            tempCoord[0] = coords[m][0];
+            tempCoord[1] = coords[m][1];
+            tempCoord[2] = coords[m][2];
+            tempCoord[3] = coords[m][3];
+            for (int i = 0; i < streetNumber; ++i) {
+                if (i == m) continue;
+                for (int j = 0; j < (2 * (segNumbers[i] + 1)) - 3; ++j) {
+                    if (j + 3 >= (2 * (segNumbers[i] + 1))) break;
+                    tempCoord2[0] = coords[i][j];
+                    tempCoord2[1] = coords[i][j+1];
+                    tempCoord2[2] = coords[i][j+2];
+                    tempCoord2[3] = coords[i][j+3];
+                    j = j + 1;
+                    if (getSub(tempCoord, tempCoord2) == 0){
+                        cerr << "There is a complete overlap(this street is a sub street)" << endl;
+                        cerr << "the street is " << i << endl;
+                        cerr << tempCoord2[0] << tempCoord2[1] << tempCoord2[2] << tempCoord2[3] << endl;
+                        return -1;
+                    }
+                    j = j + 1;
+                }
+            }
+        }
     }
     return 0;
 }
+
 
 int main(){
     int countNumber = 0;
@@ -266,14 +399,23 @@ int main(){
             cout << endl;
         }
         // can be deleted afterall but remember to add the detectOverlop.
-        if (detectOverlop() == -1) {
+        if (detectOverlap() == -1) {
             countNumber = 1 + countNumber;
-            cerr << "Error: the generated output is invalid." << endl;
             if (countNumber == 25) {
                 cerr << "Error: Failed to generate valid input for 25 simultaneous attempts." << endl;
                 exit(0);
             }
         }
-        if (detectOverlop() == 0) sleep(getWaitTime());
+        cout << endl;
+        if (detectOverlap() == 0) sleep(getWaitTime());
     }
+
+    /*
+    int line1[4] = {-5,1,6,-5};
+    int line2[4] = {-19,-7,-12,-4};
+    crossPoint[0] = 0;
+    crossPoint[1] = 0;
+    cout << getCrossPoint(line1,line2) << endl;
+    cout << crossPoint[0] << crossPoint[1] << endl;
+     */
 }
