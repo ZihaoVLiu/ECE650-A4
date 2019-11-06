@@ -1,36 +1,3 @@
-/* #include "random_number.h"
-
-
-void reader (FILE * stream){
-    char buffer[1024];
-    while(!feof (stream) && !ferror(stream) && fgets(buffer, sizeof (buffer), stream) != NULL)
-        fputs (buffer, stdout);
-}
-int main(){
-    int fds[2];
-    pid_t pid;
-
-    pipe(fds);
-    pid = fork();
-    if (pid == (pid_t) 0) {
-        FILE * stream;
-        close(fds[1]);
-        stream = fdopen(fds[0], "r");
-        reader(stream);
-        close(fds[0]);
-    }
-    else{
-        FILE * stream;
-        close(fds[0]);
-        stream = fdopen(fds[1], "w");
-        writer("wocaonima", 5, stream);
-        close(fds[1]);
-    }
-    return 0;
-}
- */
-
-
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -68,7 +35,6 @@ int randV(int kmin, int kmax){
     ifstream urandom("/dev/urandom");
     // check whether it fail
     if (urandom.fail()) {
-        cerr << "Error: Cannot open /dev/urandom" << endl;
         return 1;
     }
     // read a random 8-bit value.
@@ -80,8 +46,6 @@ int randV(int kmin, int kmax){
             break;
         }
     }
-    // can be deleted afterall
-    cout << "Random character is: " << (unsigned int)ch << endl;
     // close random stream
     urandom.close();
     return (unsigned int)ch;
@@ -93,7 +57,6 @@ int randC(int c){
     ifstream urandom("/dev/urandom");
     // check whether it fail
     if (urandom.fail()) {
-        cerr << "Error: Cannot open /dev/urandom" << endl;
         return 1;
     }
     // read a random 8-bit value.
@@ -105,8 +68,6 @@ int randC(int c){
             break;
         }
     }
-    // can be deleted afterall
-    cout << "Random coordinate is: " << (unsigned int)ch << endl;
     // close random stream
     urandom.close();
     return ch;
@@ -141,10 +102,6 @@ int getStreetName(int nNumber){
             sort =  sort + 1;
         }
     }
-    // can be deleted afterall
-    for (int k = 0; k < nNumber; ++k) {
-        cout << streetName[k] << endl;
-    }
     return 0;
 }
 
@@ -172,7 +129,6 @@ int getWaitTime(){
 // define a function to initialize coordinate of each street.
 int getCoords(int nNumber){
     int segNumber;
-    cout << "cdefault is: " << cDefault << endl;
     for (int i = 0; i < nNumber; ++i) {
         segNumber = segNumbers[i];
         for (int j = 0; j < (2 * (segNumber+1)); ++j) {
@@ -275,8 +231,6 @@ int detectOverlap(){
             if (j != (2 * (segNumber + 1))) {
                 for (int k = (j + 2); k < (2 * (segNumber + 1)); ++k) {
                     if (tempCoord[0] == coords[i][k] && tempCoord[1] == coords[i][k + 1]) {
-                        // can be deleted afterall
-                        cout << "the valus is: " << i << endl;
                         return -1;
                     }
                     k = k + 1;
@@ -302,10 +256,6 @@ int detectOverlap(){
                     tempCoord2[2] = coords[i][k+2];
                     tempCoord2[3] = coords[i][k+3];
                     if (getCrossPoint(tempCoord, tempCoord2) == 0) {
-                        cerr << "There is intersection between segment in a street." << i << endl;
-                        cerr << "the crosspoint is: " << crossPoint[0] << " " << crossPoint[1] << endl;
-                        cerr << "seg1 " << tempCoord[0] << "," << tempCoord[1] << "  " << tempCoord[2] << "," << tempCoord[3] << endl;
-                        cerr << "seg2 " << tempCoord2[0] << "," << tempCoord2[1] << "  " << tempCoord2[2] << "," << tempCoord2[3] << endl;
                         return -1;
                     }
                     k = k + 3;
@@ -336,8 +286,6 @@ int detectOverlap(){
                         if (getCrossPoint(tempCoord,tempCoord2) == 0) intersection = true;
                         if (tempCoord[0] == tempCoord2[0] && tempCoord[1] == tempCoord2[1]
                         && tempCoord[2] == tempCoord2[2] && tempCoord[3] == tempCoord2[3]){
-                            cerr << "the lines are " << m << " and " << j << endl;
-                            cout << endl;
                             return -1;
                         }
                         k = k + 1;
@@ -362,10 +310,6 @@ int detectOverlap(){
                     tempCoord2[3] = coords[i][j+3];
                     j = j + 1;
                     if (getSub(tempCoord, tempCoord2) == 0){
-                        cerr << "There is a complete overlap(this street is a sub street)" << endl;
-                        cerr << "the substreet is " << m << endl;
-                        cerr << "the street is " << i << endl;
-                        cerr << tempCoord2[0] << tempCoord2[1] << tempCoord2[2] << tempCoord2[3] << endl;
                         return -1;
                     }
                     j = j + 1;
@@ -375,30 +319,51 @@ int detectOverlap(){
     }
     if (intersection == true) return 0;
     else{
-        cerr << "There is no intersection among these street." << endl;
         return -1;
     }
 }
 
 
-int mains(){
+int main(){
+    int identity = 0;
     int countNumber = 0;
     while (true) {
+        // remove the existed street for next loop.
+        if (identity == 1){
+            identity = 0;
+            for (int i = 0; i < streetNumber; ++i) {
+                cout << "r " << "\"" <<streetName[i] << "\"" << endl;
+            }
+        }
         getStreetNumber();
         getStreetName(streetNumber);
         getSegNumber(streetNumber);
-        // can be deleted afterall.
-        cout << "waiting time is: " << getWaitTime() << endl;
         getCoords(streetNumber);
-        // for loop can be deleted afterall
-        for (int i = 0; i < streetNumber; ++i) {
-            int segNumber = segNumbers[i];
-            for (int j = 0; j < (2 * (segNumber + 1)); ++j) {
-                cout << coords[i][j] << " ";
+
+        if (detectOverlap() == 0) {
+            identity = 1;
+            // standard cout to be gathered by a1.
+            // for loop can be deleted afterall
+            for (int i = 0; i < streetNumber; ++i) {
+                cout << "a \"" << streetName[i] << "\" ";
+                int segNumber = segNumbers[i];
+                for (int j = 0; j < (2 * (segNumber + 1)); ++j) {
+                    if (j % 2 == 0) {
+                        cout << "(";
+                        cout << coords[i][j] << ",";
+                    }
+                    if (j % 2 == 1) {
+                        cout << coords[i][j] << ") ";
+                    }
+                }
+                cout << endl;
             }
-            cout << endl;
+            countNumber = 0; // if code can be executed. set the countnumber back to 0.
+            cout << "g" << endl;
+            sleep(getWaitTime());
         }
-        // can be deleted afterall but remember to add the detectOverlop.
+
+
         if (detectOverlap() == -1) {
             countNumber = 1 + countNumber;
             if (countNumber == 25) {
@@ -406,22 +371,5 @@ int mains(){
                 exit(0);
             }
         }
-        cout << "countnumber is " << countNumber << endl;
-        cout << "pid is " << getpid() << endl;
-        cout << "ppid is " << getppid() << endl;
-        cout << endl;
-        if (detectOverlap() == 0) {
-            countNumber = 0; // if code can be executed. set the countnumber back to 0.
-            sleep(getWaitTime());
-        }
     }
-
-    /*
-    int line1[4] = {-5,1,6,-5};
-    int line2[4] = {-19,-7,-12,-4};
-    crossPoint[0] = 0;
-    crossPoint[1] = 0;
-    cout << getCrossPoint(line1,line2) << endl;
-    cout << crossPoint[0] << crossPoint[1] << endl;
-     */
 }
