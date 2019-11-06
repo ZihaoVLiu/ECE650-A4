@@ -381,7 +381,7 @@ int detectOverlap(){
 }
 
 
-int main(){
+int mains(){
     int countNumber = 0;
     while (true) {
         getStreetNumber();
@@ -401,13 +401,19 @@ int main(){
         // can be deleted afterall but remember to add the detectOverlop.
         if (detectOverlap() == -1) {
             countNumber = 1 + countNumber;
-            if (countNumber == 100) {
-                cerr << "Error: Failed to generate valid input for 100 simultaneous attempts." << endl;
+            if (countNumber == 25) {
+                cerr << "Error: Failed to generate valid input for 25 simultaneous attempts." << endl;
                 exit(0);
             }
         }
+        cout << "countnumber is " << countNumber << endl;
+        cout << "pid is " << getpid() << endl;
+        cout << "ppid is " << getppid() << endl;
         cout << endl;
-        if (detectOverlap() == 0) sleep(getWaitTime());
+        if (detectOverlap() == 0) {
+            countNumber = 0; // if code can be executed. set the countnumber back to 0.
+            sleep(getWaitTime());
+        }
     }
 
     /*
