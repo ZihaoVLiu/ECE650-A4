@@ -25,6 +25,7 @@ int Input(){
     while (!std::cin.eof()) {
         std::string line;
         std::getline(std::cin, line);
+        std::cout << line << std::endl;
     }
     return 0;
 }
@@ -156,7 +157,11 @@ int main(int argc, char **argv)
     }
     kids.push_back(child_pid);
 
+    dup2(pipe3[1], STDOUT_FILENO);
+    close(pipe3[0]);
+    close(pipe3[1]);
     int res = Input();
+
     // send kill signal to all children
     for (pid_t k : kids) {
         int status;
