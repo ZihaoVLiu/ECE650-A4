@@ -216,11 +216,19 @@ int crossPointInSegment(int line[4]){
     }
 }
 
-// define a function to detect repeat and overlap problems.
+// define a function to detect repeat and overlap problems. -1 means invalid.
 int detectOverlap(){
     int tempCoord[4];
     int tempCoord2[4];
     int segNumber;
+
+    // detect loop.
+    for (int j1 = 0; j1 < streetNumber; ++j1) {
+        segNumber = segNumbers[j1];
+        if (coords[j1][0] == coords[j1][2 * (segNumber + 1) - 2] && coords[j1][1] == coords[j1][2 * (segNumber + 1)-1])
+            return -1;
+    }
+
 
     // detect same node exist in each street.
     for (int i = 0; i < streetNumber; ++i) {
@@ -278,7 +286,7 @@ int detectOverlap(){
             if (i < nodeNumber - 3){
                 for (int j = (m + 1); j < streetNumber; ++j) {
                     for (int k = 0; k < (2 * (segNumbers[j] + 1)); ++k) {
-                        if (k + 3 >= (nodeNumber)) break;
+                        if (k + 3 >= (2 * (segNumbers[j] + 1))) break;
                         tempCoord2[0] = coords[j][k];
                         tempCoord2[1] = coords[j][k+1];
                         tempCoord2[2] = coords[j][k+2];
@@ -317,7 +325,34 @@ int detectOverlap(){
             }
         }
     }
-    if (intersection == true) return 0;
+
+    // detect no intersection among the street.
+    bool DifferStInter = false;
+    for (int i1 = 0; i1 < streetNumber; ++i1) {
+        segNumber = segNumbers[i1];
+        int nodeNumber = (2 * (segNumber + 1));
+        for (int i = 0; i < nodeNumber; ++i) {
+            tempCoord[0] = coords[i1][i];
+            tempCoord[1] = coords[i1][i+1];
+            tempCoord[2] = coords[i1][i+2];
+            tempCoord[3] = coords[i1][i+3];
+            for (int j = (i1 + 1); j < streetNumber; ++j) {
+                for (int k = 0; k < (2 * (segNumbers[j] + 1)); ++k) {
+                    if (k + 3 >= (2 * (segNumbers[j] + 1))) break;
+                    tempCoord2[0] = coords[j][k];
+                    tempCoord2[1] = coords[j][k+1];
+                    tempCoord2[2] = coords[j][k+2];
+                    tempCoord2[3] = coords[j][k+3];
+                    if (getCrossPoint(tempCoord, tempCoord2) != -1)
+                         DifferStInter = true;
+                    k = k + 1;
+                }
+            }
+            i = i + 1;
+        }
+    }
+
+    if (intersection == true && DifferStInter == true) return 0;
     else{
         return -1;
     }
@@ -354,6 +389,10 @@ int main(){
     n = array_opt[1];
     l = array_opt[2];
     c = array_opt[3];
+
+
+    int line1[4] = {0,0,2,2};
+    int line2[4] = {0,1,0,5};
 
     int identity = 0;
     int countNumber = 0;
