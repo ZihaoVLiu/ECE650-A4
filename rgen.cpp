@@ -158,7 +158,7 @@ int CPinSegment (int line1[4], int line2[4]){
 
     if (crossPoint[0] >= min(line1[0], line1[2]) && crossPoint[0] <= max(line1[0], line1[2])){
         if (crossPoint[1] >= min(line2[1], line2[3]) && crossPoint[1] <= max(line2[1], line2[3]) &&
-        crossPoint[0] >= min(line2[0], line2[2]) && crossPoint[0] <= max(line2[0], line2[2])) return 0;
+            crossPoint[0] >= min(line2[0], line2[2]) && crossPoint[0] <= max(line2[0], line2[2])) return 0;
     }
     else return -1;
 }
@@ -205,8 +205,8 @@ int crossPointInSegment(int line[4]){
         float k = ((line[1] - line[3]) / (line[0] - line[2]));
         float b = (line[1] - k * line[0]);
         if (((crossPoint[1] - (k * crossPoint[0] + b)) < 0.0001 || (crossPoint[1] - (k * crossPoint[0] + b)) > 0.0001) &&
-        crossPoint[0] >= min(line[0], line[2]) && crossPoint[0] <= max(line[0],line[2]) &&
-        crossPoint[1] >= min(line[1], line[3]) && crossPoint[1] <= max(line[1],line[3]))
+            crossPoint[0] >= min(line[0], line[2]) && crossPoint[0] <= max(line[0],line[2]) &&
+            crossPoint[1] >= min(line[1], line[3]) && crossPoint[1] <= max(line[1],line[3]))
             return 0;
         else return -1;
     } else{
@@ -285,7 +285,7 @@ int detectOverlap(){
                         tempCoord2[3] = coords[j][k+3];
                         if (getCrossPoint(tempCoord,tempCoord2) == 0) intersection = true;
                         if (tempCoord[0] == tempCoord2[0] && tempCoord[1] == tempCoord2[1]
-                        && tempCoord[2] == tempCoord2[2] && tempCoord[3] == tempCoord2[3]){
+                            && tempCoord[2] == tempCoord2[2] && tempCoord[3] == tempCoord2[3]){
                             return -1;
                         }
                         k = k + 1;
@@ -323,8 +323,38 @@ int detectOverlap(){
     }
 }
 
+int array_opt[4];
+int getopt() {
+    string opt;
+    int count = 0;
+    int result;
+    getline(cin, opt);
+    for (int i = 0; i < opt.size(); ++i) {
+        if (opt[i] == '=') {
+            for (int j = i + 1; j < opt.size(); ++j) {
+                if (opt[j] >= '0' && opt[j] <= '9') {
+                    result = result * 10 + (opt[j] - 48);
+                }
+                if (opt[j] == ' ') {
+                    array_opt[count] = result;
+                    count = count + 1;
+                    result = 0;
+                    break;
+                }
+            }
+        }
+    }
+}
+
 
 int main(){
+    // get command line argument opt.
+    getopt();
+    s = array_opt[0];
+    n = array_opt[1];
+    l = array_opt[2];
+    c = array_opt[3];
+
     int identity = 0;
     int countNumber = 0;
     while (true) {
