@@ -382,13 +382,46 @@ int getopt() {
 }
 
 
-int main(){
-    // get command line argument opt.
-    getopt();
-    s = array_opt[0];
-    n = array_opt[1];
-    l = array_opt[2];
-    c = array_opt[3];
+
+int main1(int argc, char **argv)
+{
+    // command line argument define.
+    std::string sValue;
+    s = 10;
+    std::string nValue;
+    n = 5;
+    std::string lValue;
+    l = 5;
+    std::string cValue;
+    c = 20;
+    int index;
+    int command;
+
+    opterr = 0;
+
+    // expected options are '-s', '-n', '-l' and '-c' values.
+    while ((command = getopt (argc, argv, "s:n:l:c:")) != -1)
+        switch (command)
+        {
+            case 's':
+                sValue = optarg;
+                s = atoi(sValue.c_str());
+                break;
+            case 'n':
+                nValue = optarg;
+                n = atoi(nValue.c_str());
+                break;
+            case 'l':
+                lValue = optarg;
+                l = atoi(lValue.c_str());
+                break;
+            case 'c':
+                cValue = optarg;
+                c =atoi(cValue.c_str());
+                break;
+            default:
+                return 0;
+        }
 
 
     int line1[4] = {0,0,2,2};
