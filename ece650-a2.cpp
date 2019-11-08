@@ -140,7 +140,7 @@ void print_path(int i, int j){
 // detect is there a edge between two input node.
 int IsCovered(){
     if (graph[startendList[0]][startendList[1]] == inf){
-        cout << "Error: There is no edge between start and end nodes." << endl;
+        cerr << "Error: There is no edge between start and end nodes." << endl;
         return 0;
     }
     return 1;
@@ -152,7 +152,7 @@ int eInVertex(){
     int temp = 1;
     for (int i = 0; i < EleLength; ++i) {
         if (edgeList[i] >= VNumber) {
-            cout << "Error: Input edge node does not exist." << endl;
+            cerr << "Error: Input edge node does not exist." << endl;
             temp = 0;
             break;
         }
@@ -175,7 +175,7 @@ int sInEdge(){
         return 1;
     }
     else{
-        cout << "Error: Input s is not a edge node or not a vertex." << endl;
+        cerr << "Error: Input s is not a edge node or not a vertex." << endl;
         return 0;
     }
 }
@@ -213,7 +213,7 @@ int main() {
                 continue;
             }
             else {
-                cout << "Error: No Edges are input." << endl;
+                cerr << "Error: No Edges are input." << endl;
                 continue;
             }
         }
