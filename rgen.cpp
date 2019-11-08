@@ -383,7 +383,7 @@ int getopt() {
 
 
 
-int main1(int argc, char **argv)
+int main(int argc, char **argv)
 {
     // command line argument define.
     std::string sValue;
@@ -423,9 +423,6 @@ int main1(int argc, char **argv)
                 return 0;
         }
 
-
-    int line1[4] = {0,0,2,2};
-    int line2[4] = {0,1,0,5};
 
     int identity = 0;
     int countNumber = 0;
