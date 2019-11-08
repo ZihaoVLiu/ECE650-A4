@@ -2,11 +2,12 @@
 #include <unistd.h>
 #include <signal.h>
 #include <iostream>
+#include <string>
 
 // execute the rgen to get random streets.
-int rgen(){
-    char * argvrgen[2] = {"rgen", NULL}; // argument for rgen.cpp.
-    return execv ("rgen", argvrgen);
+int rgen(int argc, char * argv[]){
+    argv[0] = (char*) "rgen";
+    return execv ("rgen", argv);
 }
 // execute ece650-a1.py to generate vertex and edge.
 int a1(){
@@ -29,55 +30,11 @@ int Input(){
     }
     return 0;
 }
-// command line argument function.
-int opt(int s, int n, int l, int c){
-    std::cout << "s=" << s
-              << " n=" << n
-              << " l=" << l
-              << " c=" << c << " " << std::endl;
-}
 
-int main(int argc, char **argv)
+
+int main(int argc, char** argv)
 {
-    // command line argument define.
-    std::string sValue;
-    int s = 10;
-    std::string nValue;
-    int n = 5;
-    std::string lValue;
-    int l = 5;
-    std::string cValue;
-    int c = 20;
-    int index;
-    int command;
 
-    opterr = 0;
-
-    // expected options are '-s', '-n', '-l' and '-c' values.
-    while ((command = getopt (argc, argv, "s:n:l:c:")) != -1)
-        switch (command)
-        {
-            case 's':
-                sValue = optarg;
-                s = atoi(sValue.c_str());
-                break;
-            case 'n':
-                nValue = optarg;
-                n = atoi(nValue.c_str());
-                break;
-            case 'l':
-                lValue = optarg;
-                l = atoi(lValue.c_str());
-                break;
-            case 'c':
-                cValue = optarg;
-                c =atoi(cValue.c_str());
-                break;
-            default:
-                return 0;
-        }
-
-    // pipe starts here.
     std::vector<pid_t> kids;
     pid_t child_pid;
 
@@ -91,7 +48,7 @@ int main(int argc, char **argv)
         dup2(OtoR[1], STDOUT_FILENO);
         close(OtoR[0]);
         close(OtoR[1]);
-        return opt(s, n, l, c);
+        return 0;
     }
     else if (child_pid < 0) {
         std::cerr << "Error: could not fork\n";
@@ -113,7 +70,8 @@ int main(int argc, char **argv)
         dup2(pipe2[1], STDOUT_FILENO);
         close(pipe2[0]);
         close(pipe2[1]);
-        return rgen();
+        return rgen(argc, argv);
+        //return execv("rgen", spec);
     }
     else if (child_pid < 0) {
         std::cerr << "Error: could not fork\n";
