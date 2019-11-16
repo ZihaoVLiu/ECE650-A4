@@ -3,6 +3,8 @@
 #include <signal.h>
 #include <iostream>
 #include <string>
+#include <sys/wait.h>
+#include <stdlib.h>
 
 // execute the rgen to get random streets.
 int rgen(int argc, char * argv[]){
