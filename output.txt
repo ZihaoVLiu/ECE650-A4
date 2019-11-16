@@ -1,4 +1,0 @@
-Marking #17: StudentInfo(repo='z583liu-master', first='Zihao', last='Liu', watiam='z583liu', studentid=20750564, email='zihao.liu@uwaterloo.ca')
-Mark = 0
-
-Cannot find the executable file ece650-a3!
